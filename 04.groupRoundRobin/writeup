@@ -1,0 +1,21 @@
+3. (10 pts.) Investigate and Demo
+
+For a given workload, what happens if you assign 3 CPUs to the foreground group versus assigning 1 CPU to the foreground group? 
+
+	When we assign 3 CPUs to the foreground group, our Andriod apps performance will be better than if assign 1 CPU to the foreground group. Due to time limitation, our Andriod apps performance around 500 when there is 2 CPU in foreground group in Geekbench3. 
+
+
+If you assign 3 CPUs vs 1 CPU to the foreground group, does the foreground app run 3 times as fast? Why or why not? 
+
+	No, foreground app will not run 3 times as fast when we assign 3 CPUs other than 1 CPU to the foreground group. This is because I/O task and scheduling inefficiency will cost overhead and slower the performance.
+
+
+What qualitative difference in performance do you see when running a workload with different CPU configurations? 
+	
+	While running CPU configurations of 3 foregound CPUs vs 1 foregound CPU, our work load is significantly handles better and run faster when using 3 CPUs.
+
+
+How does your scheduler compare to the default Android scheduler in terms of qualitative performance? 
+Are there any scenarios in which there are visible performance differences?
+
+	When it comes to compare our scheduler to the default Android scheduler, when we open Youtube under our scheduler, it is slower and sometimes gitter comparing to the default Android scheduler. It cause might be from load_balance from our scheduler, which is creating overhead.

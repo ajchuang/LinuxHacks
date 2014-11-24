@@ -1,0 +1,208 @@
+--------------------------------------------------------------------------------
+                   OS Homework I -- Jen-Chieh Huang (jh3478)
+--------------------------------------------------------------------------------
+Exercise 1.8
+--------------------------------------------------------------------------------
+
+    The most naive way is to run the guest OS as a (or a set of ) user process
+    in the host machine. More commonly, this is known as the Type-2 hypervisor.
+    However, there are a few things we need to take care of.
+
+    First, we will need to handle kernel/user mode switching in the guest OS.
+    Since the guest system may run in both kernel mode and user mode, a proper
+    way to coordinate the actual mode change in the host system would be
+    necessary. To deal with this problem, the guest OS and host OS must
+    cooperate in following things, system call processing, interrupt handling
+    and other kernel mode issues. The host OS would need to track if the guest
+    OS is responsbile for the current mode switching, and preserve its own
+    states (registers etc) well.
+
+    Second, a proper guest OS boot procedure is also necessary. The host OS
+    needs to load the boot loader from the virtual disk, and makes it run. After
+    this process, the host OS will need to hand over the execution rights to the
+    guest OS.
+
+    Moreover, an address translation mechanism in the host OS is also essential
+    for the guest OS to perform the virtual memory mechanism. Otherwise, the
+    memory protection mechanism in the host OS would prevent some critical
+    memory operation in the guest OS.
+
+    Finally, an interrupt mapping is necessary to allow the guest OS to handle
+    the I/O interrupts through the host OS. It can be simply done by allowing
+    the guest OS to insert some function calls in the host OS interrupt
+    handlers.
+
+    Ref:
+        - Chap 2.10, Operating Systems Principles & Practice
+        - Wiki page, http://en.wikipedia.org/wiki/Hypervisor
+
+--------------------------------------------------------------------------------
+Exercise 1.13
+--------------------------------------------------------------------------------
+
+    For my own machine, I'd say I prefer the following order.
+        - reliable
+        - security
+        - adoption
+        - performance
+        - portability
+
+    First of all, the OS should be highly reliable. If the system crashes all
+    the time, that's not the machine I would buy. Second, since the machines
+    today are almost always connected to the internet or external storage
+    devices, it is also essential to be secure.Otherwise, the virus and worms
+    can also seriously affect my daily work. Third, adoption is also important
+    to me. I would like a system that I can find as many application/resources
+    as possible. Fourth, a high performance system is also desirable although
+    sometimes a little performance degration is acceptable. Finally, portability
+    is not really important to me because people do not really install new
+    versions of OS for your old machine a lot compared to late 90s. Most of the
+    cases, I would change the OS as well as the machine. Thus, as long as the
+    adoption of the new OS is wide enough, the portability is not really an
+    issue to me.
+
+--------------------------------------------------------------------------------
+Exercise 3.1
+--------------------------------------------------------------------------------
+
+    Yes, a fork call can return error in several cases. For example,
+
+    1. the system memory is insufficient for TCB of the child process
+    2. the max number of processes is reached.
+
+    In above cases (but not limited to), -1 will be returned and errno will
+    be set accordingly.
+
+    Ref:
+        - Linux manual pages
+
+--------------------------------------------------------------------------------
+Exercise 3.2
+--------------------------------------------------------------------------------
+
+    Yes, an exec call can return error in several cases. For example,
+
+    1. The most obvious one would be that the executable image does NOT exist.
+    2. The specified executable was not a really a executable binary image.
+    3. There is insufficient memory to run the program.
+    4. The user is not allowed the program to run because of the permission
+       settings.
+
+    In above case (but not limited to), the exec call will return -1,
+    and set the proper errno to inform the caller that the exec attempt is
+    failed.
+
+    Ref:
+        - Linux manual pages
+
+--------------------------------------------------------------------------------
+Exercise 3.3
+--------------------------------------------------------------------------------
+
+    The program is some kind of "fork bomb". Many processes are created and
+    the created processes keep creating more child processes. However, compared
+    to the common fork bomb, it's somehow different because it checks the fork
+    failure and exit voluntarily.
+
+    In most cases in the common "Linux" configuration, the program will probably
+    run forever. Although the number of tasks in the system will reach the
+    system-defined max number of tasks or the user ulimit bound, the resources
+    of those tasks of which the fork call failed will be reclaimed for
+    future use. Thus, as long as any of the created processes is still alive,
+    the program will keep running. (As a matter of fact, a series of experiments
+    has been conducted in the Ubuntu machine (ulimit -u vs the bomb). Setting a
+    ulimit -u larger than a few hundreds seems sufficient for the program to run
+    forever. The key point is to config a suffient number of upper limit that
+    keeps the program running until the "init" process reclaims the used
+    resources whose parents terminate earlier. That is, to avoid/minimize the
+    tasks in the ZOMBIE state.) A simple example will be a 2 process case. The
+    parent task create the child task, and it terminates. The child task will
+    be adopted by the init task. Meanwhile, the resources of the original parent
+    task will be reclaimed. In this way, the program can run forever.
+
+    On the other hand, there are still possibilities the program will stop. For
+    example, if the system allows 2 tasks only, and the child process forks the
+    2nd time earlier than the parent process, the child process will become a
+    ZOMBIE process since the fork error results in the process termination
+    (leaving the main function). In this case, the 2nd attempt of the fork call
+    in the parent process will also fail since the resources are not released
+    from the child process (ZOMBIE). In the end, all processes are terminated
+    and the whole program stops.
+
+    In conlusion, the program may run forever or stop depending on the
+    following factors at least:
+        - max allowed number of processes
+        - the order of process execution
+        - when the init process reclaims the orphan processes.
+
+    Ref:
+        - Chap 3, Linux Kernel Development, 3rd Edition
+        - Wiki page: http://en.wikipedia.org/wiki/Fork_bomb
+
+--------------------------------------------------------------------------------
+Exercise 3.4
+--------------------------------------------------------------------------------
+
+    The wait call will return successfully only when there is a child task which
+    has terminated. Therefore, if the wait call returns both successfully and
+    immediately, at least one of the child tasks must be ended before the wait
+    call is called.
+
+--------------------------------------------------------------------------------
+Exercise 3.7
+--------------------------------------------------------------------------------
+
+    After executing the 'ls' command, generally, the login screen will show up.
+    More precisely, it is the parent process of the shell process will show up (
+    consider the case that the user may run a shell instance in a running shell
+    instance). This is because the exec command will load the specified program
+    into the current process, that is, the shell. Therefore, after the 'ls'
+    command is completed, the shell is also gone. Finally, the log-in screen or
+    the parent process is brought to the front.
+
+    Ref:
+        - Official GNU Bash Manual,
+          http://www.gnu.org/software/bash/manual/bashref.html
+
+--------------------------------------------------------------------------------
+Exercise 3.8
+--------------------------------------------------------------------------------
+
+    In the program, every process will create one new process when n is larger
+    than 0. Given n is 5, the number of newly created process should be 2^5 - 1.
+    Thus, it's 31 newly create processes plus the original process. That should
+    be 32 processes in total after executing the program.
+
+--------------------------------------------------------------------------------
+Exercise 3.9
+--------------------------------------------------------------------------------
+
+    There are 3 instances of variable 'x'. Their values are
+    - the original process (P1): x = 20
+    - the 1st child (P2): x = 10 (forked @ line 2)
+    - the 2nd child (P3): x = 15 (forked @ line 7)
+
+    The reason to this output is quite clear. In line 2, a new child (P2) is
+    created by P1. At this point, x of P1 and P2 are both 5. In line 5, P2
+    satifies the criteria, and x of P2 becomes 10. P2 terminates as well. In
+    line 8, P1 forks again, and P3 is spawn with x = 5. In line 9, x in both
+    P1 and P3 are 15. Finally, P1 satisfies the condition in line 10; thus,
+    x of P1 becomes 20.
+
+--------------------------------------------------------------------------------
+Exercise 3.10
+--------------------------------------------------------------------------------
+
+    The program 1 will output
+        6
+        6
+
+    The reason that program 1 has two outputs is because the both parent and
+    child processes output after the fork call.
+
+    The program 2 will output
+        6
+
+    The reason that program 2 has only one output is because the child process
+    exits after fork call. Thus only one output is printed by the parent
+    process.

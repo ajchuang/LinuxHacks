@@ -1,0 +1,117 @@
+================================================================================
+                                     README
+================================================================================
+1. Introduction
+
+    The program, w4118_sh, is a simple shell program fulfilled the requirement
+of the assignment 1 in the course, W4118. It does not only provides a set of
+basic functions but also a set of testing features. In this document, functions,
+the code structure as well as other details you need to know will be included.
+
+================================================================================
+2. Features
+
+    The shell supports a set of built-in commands listed below. Please note
+that these commands do NOT work with pipes, and explicit errors are returned if
+doing so.
+    - cd [directory]: change the current working directory.
+    - exit: quit the shell. If you set this shell as default shell, the log-in
+        screen will be brought back.
+    - path: the path command has 2 type of syntax
+        - path: show the current search paths
+        - path {+/-} [directory] : add(+) or delete(-) current search paths.
+    - debug: enale the debug log. They will be located at /tmp folder,
+        w4118_sh.log and w4118_sh_mem.log. There logs provides abundant
+        information for developer to trace memory traces and what has happened.
+    - testing {fork | pipe | exec} : when turning testing on, the system call
+        specified will fail with a particular cause. It allows you to test the
+        shell efficiently.
+
+    In addition to default commands, one can execute the programs specified in
+the search path by simply entering the name of the executable. One should note
+that the search for the executable will be in the order you add the paths. In
+other words, if several executables are of the same name, the first hit will
+be executed.
+
+    Also, the Ctrl-C feature is implemented. When the command is not
+responding, the user can always use Ctrl-C to terminate the running process.
+
+================================================================================
+3. Code Strucuture
+
+    The source codes are constucted in a systematic way. The header files
+include
+    - w4118_sh_def.h: the definition header file. It includes the macros,
+        structures, and enums used.
+
+    - w4118_sh_ext.h: the extern file describes the global flags shared by all
+        the modules. (debug, testing..)
+
+    - util.h: the file includes the function declarations, macros, and task
+        management data structures.
+
+    - str_list.h: the file includes the necessary definitions for string list
+        processing including structures and function declarations.
+
+    Besides, C source codes are strucutred in the same way.
+    - w4118_sh.c: main source codes. All the major functions are implemented
+        here.
+
+    - str_list.c: implement the string list object which is used to process
+        the user input.
+
+    - util.c: util.c includes 2 parts. The 1st part is the task list management.
+        The task list allows the shell the track each created process and
+        do whatever needs to be done. The 2nd part is the system call wrapper.
+        This program wraps the all the system calls including memory management
+        APIs such that low level testing can be done.
+
+================================================================================
+4. Main Logic
+
+    The main logic of this program is listed below
+
+    a. the program init the global variables and so on.
+    b. wait for user input
+    c. Use getc to get the the user input byte-by-byte, and perform the basic
+        command parsing, and checking.
+    d. Starting to create new process and exec the corresponding executable one
+        after another. Note that the parent process of all forked processes are
+        the shell process. All the information is holding in the shell process
+        as well.
+    e. If pipes are used, connect the processes by pipes. The parent will also
+        need to close the FDs.
+    f. wait for all the children to end.
+    g. go to b) again to wait for new user input.
+
+================================================================================
+5. Testing
+    The following testing procedures have done for the program.
+    - Testing with the official python cases. (PASS)
+    - Testing with the "testing" command for system call failures (PASS)
+        - including pipe, fork, exec etc.
+        - also including memopry opportunistic failures
+    - Testing with extra python cases (PASS)
+        - extra long commands (etc)
+        - Lots of params
+    - Robustness test
+        - Run the scripting test for a very long time (PASS)
+
+================================================================================
+6. References:
+    1. Linux manual pages, for most systems call usage
+    2. www.cplusplus.com, for C lib function usage
+    3. http://tldp.org/LDP/lpg/node11.html, for how to use pipes.
+
+================================================================================
+7. Error Handling & Others
+    To conform the code convention, a tool, astyle, is used. The style config
+in the shell folder is astyle_config.sh. For more information, please check
+out the astyle website, http://astyle.sourceforge.net/.
+
+    Besides, note that, in some cases, we have no way to handle the error
+perfectly. For example, when the pipe() fails, the previous tasks are
+already running, and there is nothing we can do to fix the problem. Thus,
+it is upto the user to use Ctrl-C to terminate the running programs.
+
+
