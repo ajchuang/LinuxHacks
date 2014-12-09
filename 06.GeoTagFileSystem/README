@@ -1,0 +1,20 @@
+directory test3 reading:
+
+root@flo:/ # /data/misc/file_loc /data/misc/hmwk6/test3
+GPS read from file: /data/misc/hmwk6/test3
+__NR_set_gps_location success
+latitude: 40.811837 longitude: -73.960745 accuracy: 9.000000 age: 0
+Google Maps URL: https://www.google.com/maps/@40.811837,-73.960745,15z
+
+file file1 reading:
+
+GPS read from file: /data/misc/hmwk6/file1
+__NR_set_gps_location success
+latitude: 40.811830 longitude: -73.960753 accuracy: 14.000000 age: 0
+Google Maps URL: https://www.google.com/maps/@40.811830,-73.960753,15z
+
+file file2 reading:
+GPS read from file: /data/misc/hmwk6/file2
+__NR_set_gps_location success
+latitude: 40.811669 longitude: -73.960988 accuracy: 9.000000 age: 0
+Google Maps URL: https://www.google.com/maps/@40.811669,-73.960988,15z
